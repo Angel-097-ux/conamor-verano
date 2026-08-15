@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo Con Amor - Adelanto Primavera Verano</title>
+  
+  <!-- CDN html2pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #f8fafc; color: #1e293b; padding-bottom: 80px; }
+    
+    header { 
+      background-color: #0f172a; 
+      color: #fff; 
+      padding: 1rem; 
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    header h1 { font-size: 1.2rem; font-weight: 700; }
+
+    /* BANNER PRINCIPAL */
+    .banner-container {
+      width: 100%;
+      max-width: 1400px;
+      margin: 1rem auto 0 auto;
+      padding: 0 0.8rem;
+    }
+    .banner-img {
+      width: 100%;
+      max-height: 250px;
+      object-fit: cover;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    /* Layout Responsive Grid */
+    .app-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      max-width: 1400px;
+      margin: 1rem auto;
+      padding: 0 0.8rem;
+    }
+
+    @media (min-width: 900px) {
+      .app-container {
+        grid-template-columns: 1fr 420px;
+        padding: 0 1.5rem;
+      }
+      .banner-container { padding: 0 1.5rem; }
+      body { padding-bottom: 0; }
+    }
+
+    /* Grilla de Productos */
+    .catalogo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 0.8rem;
+    }
+
+    @media (min-width: 600px) {
+      .catalogo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1.2rem;
+      }
+    }
+
+    /* Tarjeta de Producto */
+    .card-producto {
+      background: #fff;
+      border-radius: 12px;
+      padding: 0.8rem;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    /* Contenedor Carrusel / Imagen */
+    .img-container {
+      position: relative;
+      width: 100%;
+      height: 160px;
+    }
+    @media (min-width: 600px) {
+      .img-container { height: 220px; }
+    }
+
+    .img-producto {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      background-color: #f1f5f9;
+      cursor: zoom-in;
+    }
+
+    /* Botones Multimagen (Carrusel) */
+    .nav-img {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(15, 23, 42, 0.6);
+      color: white;
+      border: none;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      user-select: none;
+      z-index: 2;
+    }
+    .nav-img:hover { background: rgba(15, 23, 42, 0.9); }
+    .nav-prev { left: 5px; }
+    .nav-next { right: 5px; }
+
+    .art-code { font-size: 0.7rem; font-weight: 800; color: #2563eb; text-transform: uppercase; }
+    .card-producto h3 { font-size: 0.85rem; color: #0f172a; line-height: 1.2; height: 2.4em; overflow: hidden; }
+    .precio { font-size: 1rem; font-weight: 700; color: #059669; }
+
+    .select-group { display: flex; flex-direction: column; gap: 0.15rem; }
+    .select-group label { font-size: 0.7rem; color: #64748b; font-weight: 600; }
+    
+    select, input[type="number"], input[type="text"] { 
+      padding: 0.5rem; 
+      border: 1px solid #cbd5e1; 
+      border-radius: 6px; 
+      width: 100%; 
+      font-size: 0.85rem;
+      background-color: #fff;
+    }
+
+    .btn-agregar {
+      background-color: #0f172a;
+      color: #fff;
+      border: none;
+      padding: 0.65rem;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      margin-top: 0.3rem;
+      touch-action: manipulation;
+    }
+    .btn-agregar:active { opacity: 0.85; }
+
+    /* Contenedor Nota de Pedido */
+    .hoja-wrapper {
+      position: relative;
+    }
+
+    @media (min-width: 900px) {
+      .hoja-wrapper { position: sticky; top: 4.5rem; height: fit-content; }
+    }
+
+    .hoja-pedido {
+      background: #fff;
+      padding: 1.2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid #e2e8f0;
+    }
+
+    .hoja-header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      border-bottom: 2px solid #0f172a; 
+      padding-bottom: 0.5rem; 
+      margin-bottom: 0.8rem; 
+    }
+    .hoja-header h2 { font-size: 1.1rem; }
+    .hoja-header small { font-size: 0.75rem; color: #64748b; }
+    
+    /* Formulario Cliente */
+    .datos-cliente {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      background: #f8fafc;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .datos-cliente label { font-size: 0.7rem; font-weight: 700; color: #475569; }
+
+    /* Tabla de Pedido */
+    .tabla-container { overflow-x: auto; }
+    .tabla-pedido { width: 100%; border-collapse: collapse; margin-bottom: 0.8rem; }
+    .tabla-pedido th { background: #f8fafc; font-size: 0.7rem; padding: 6px 4px; text-align: left; color: #475569; }
+    .tabla-pedido td { font-size: 0.75rem; padding: 6px 4px; border-bottom: 1px solid #f1f5f9; }
+
+    .hoja-total {
+      border-top: 2px solid #0f172a;
+      padding-top: 0.6rem;
+      display: flex;
+      justify-content: space-between;
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+
+    /* Botones de Acción */
+    .acciones-pedido { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
+    .btn-accion { padding: 0.75rem; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: white; font-size: 0.9rem; }
+    .btn-ws { background-color: #25d366; }
+    .btn-pdf { background-color: #0f172a; }
+    .btn-print { background-color: #64748b; }
+
+    /* Barra Flotante para Celular */
+    .bar-mobile {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #0f172a;
+      color: white;
+      padding: 0.8rem 1.2rem;
+      z-index: 99;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
+    }
+    @media (min-width: 900px) { .bar-mobile { display: none; } }
+
+    .bar-mobile button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-weight: bold;
+    }
+
+    /* MODAL DE ZOOM DE IMAGEN */
+    .modal-zoom {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    .modal-zoom-wrapper {
+      overflow: auto;
+      max-width: 90%;
+      max-height: 80vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-zoom img {
+      transition: transform 0.2s ease;
+      max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    .modal-controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .modal-btn {
+      background: #ffffff;
+      color: #0f172a;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .modal-btn-close {
+      background: #ef4444;
+      color: white;
+    }
+
+    /* FIX IMPRESIÓN Y HOJA DE PEDIDO */
+    @media print {
+      body { background: white; padding-bottom: 0; }
+      header, .banner-container, #catalogo, .acciones-pedido, .bar-mobile, .modal-zoom { 
+        display: none !important; 
+      }
+      .app-container { 
+        display: block; 
+        margin: 0; 
+        padding: 0; 
+        max-width: 100%; 
+      }
+      .hoja-wrapper { 
+        position: static; 
+      }
+      #hoja-pedido { 
+        position: absolute; 
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+        box-shadow: none; 
+        border: none; 
+        padding: 0; 
+      }
+      .btn-eliminar { display: none !important; }
+      .datos-cliente input { 
+        border: none; 
+        background: transparent; 
+        padding: 0; 
+        font-weight: bold;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Con Amor - Catalog</h1>
+  </header>
+
+  <!-- BANNER SUPERIOR -->
+  <div class="banner-container">
+    <img src="img/banner.jpg" alt="Banner Con Amor" class="banner-img" onerror="this.style.display='none'">
+  </div>
+
+  <div class="app-container">
+    <!-- CATALOGO -->
+    <section class="catalogo-grid" id="catalogo"></section>
+
+    <!-- HOJA DE PEDIDO -->
+    <section class="hoja-wrapper" id="seccion-pedido">
+      <div class="hoja-pedido" id="hoja-pedido">
+        <div class="hoja-header">
+          <h2>NOTA DE PEDIDO</h2>
+          <small id="fecha-nota"></small>
+        </div>
+
+        <!-- DATOS CLIENTE -->
+        <div class="datos-cliente">
+          <div>
+            <label>Cliente / Nombre del Local:</label>
+            <input type="text" id="cli-nombre" placeholder="Ej: Moda Infantil">
+          </div>
+          <div>
+            <label>Teléfono / WhatsApp:</label>
+            <input type="text" id="cli-telefono" placeholder="Ej: 11 2345-6789">
+          </div>
+          <div>
+            <label>Localidad / Provincia:</label>
+            <input type="text" id="cli-localidad" placeholder="Ej: Córdoba">
+          </div>
+        </div>
+
+        <div class="tabla-container">
+          <table class="tabla-pedido">
+            <thead>
+              <tr>
+                <th>Art.</th>
+                <th>Talle</th>
+                <th>Color</th>
+                <th>Cant.</th>
+                <th>Subt.</th>
+                <th class="btn-eliminar"></th>
+              </tr>
+            </thead>
+            <tbody id="cuerpo-nota"></tbody>
+          </table>
+        </div>
+
+        <div class="hoja-total">
+          <span>TOTAL:</span>
+          <span id="total-monto">$0</span>
+        </div>
+      </div>
+
+      <div class="acciones-pedido">
+        <button class="btn-accion btn-ws" onclick="enviarWhatsApp()">💬 Enviar WhatsApp</button>
+        <button class="btn-accion btn-pdf" onclick="descargarPDF()">📄 Descargar PDF</button>
+        <button class="btn-accion btn-print" onclick="window.print()">🖨️ Imprimir</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- BARRA INFERIOR MÓVIL PARA VER PEDIDO RÁPIDO -->
+  <div class="bar-mobile">
+    <div>
+      <span style="font-size: 0.8rem; display: block; color: #94a3b8;">Total acumulado:</span>
+      <strong id="bar-total">$0</strong>
+    </div>
+    <button onclick="irAlPedido()">Ver Pedido 🛒</button>
+  </div>
+
+  <!-- MODAL DE ZOOM DE IMÁGENES -->
+  <div class="modal-zoom" id="modal-zoom">
+    <div class="modal-zoom-wrapper">
+      <img id="img-zoomed" src="" alt="Zoom Producto">
+    </div>
+    <div class="modal-controls">
+      <button class="modal-btn" onclick="cambiarZoom(0.25)">➕ Agrandar</button>
+      <button class="modal-btn" onclick="cambiarZoom(-0.25)">➖ Achicar</button>
+      <button class="modal-btn modal-btn-close" onclick="cerrarZoom()">✕ Cerrar</button>
+    </div>
+  </div>
+
+  <script>
+const productos = [
+  // --- PARA ELLAS / BEBÉS Y NENAS ---
+  { art: "ART 2780", nombre: "Conjunto Remera c/ Volados y Short 'Ornella'", precio: 8999, talles: ["3M", "6M", "9M", "12M"], colores: ["Blanco", "Rosa"], imagen: ["img/img63.jpg"] },
+  { art: "ART 2631", nombre: "Body Pollerita 'Zanah' Bambula Algodón", precio: 9999, talles: ["3M", "6M", "9M", "12M"], colores: ["Blanco", "Rosa"], imagen: ["img/img85.jpg","img/img91.jpg","img/img97.jpg"] },
+  { art: "ART 2620", nombre: "Body Pollerita c/ Breteles Bambulla", precio: 8999, talles: ["3M", "6M", "9M", "12M", "18M"], colores: ["Crudo", "Rojo"], imagen: "img/img116.jpg" },
+  { art: "ART 40523", nombre: "Solerito c/ canesú Algodón 'Maby'", precio: 7999, talles: ["9M", "12M", "18M", "24M", "36M"], colores: ["Azul", "Aqua"], imagen: ["img/img122.jpg","img/img155.jpg"] },
+  { art: "ART 4510", nombre: "Body Ranglan Liso", precio: 4999, talles: ["3M", "6M", "9M", "12M", "18M"], colores: ["Chicle", "Melange"], imagen: ["img/img166.jpg","img/img172.jpg"] },
+  { art: "ART 20174", nombre: "Biker Estampada Algodón Lycra", precio: 4999, talles: ["3M", "6M", "9M", "12M"], colores: ["Rosa", "Aqua"], imagen: ["img/img178.jpg","img/img236.jpg"] },
+  { art: "ART 4511", nombre: "Body Americano c/ Picot", precio: 5999, talles: ["3M", "6M", "9M", "12M", "18M"], colores: ["Rosa", "Blanco"], imagen: ["img/img247.jpg","img/img258.jpg"] },
+  { art: "ART 20176", nombre: "Biker Morley 'Lais'", precio: 2499, talles: ["3M", "6M", "9M", "12M"], colores: ["Rosa", "Melange"], imagen: "img/img253.jpg" },
+  { art: "ART 4512", nombre: "Body Básico c/ Estampa + Short", precio: 9999, talles: ["3M", "6M", "9M", "12M", "18M"], colores: ["Crudo", "Rosa"], imagen: ["img/img284.jpg","img/img290.jpg"] },
+  { art: "ART 2675", nombre: "Body 'Emma' cuello BB Picot", precio: 5999, talles: ["1M", "3M", "6M", "9M", "12M"], colores: ["Blanco", "Melange"], imagen: "img/img326.jpg" },
+  { art: "ART 2677", nombre: "Vestido 'Berta' Plumeti cuello BB Picot", precio: 7999, talles: ["3M", "6M", "9M", "12M"], colores: ["Rosa", "Blanco", "Melange"], imagen: ["img/img320.jpg","img/img332.jpg","img/img340.jpg"] },
+  { art: "ART 2665", nombre: "Body 'Celina' c/ Volados", precio: 8999, talles: ["1M", "3M", "6M", "9M", "12M"], colores: ["Flores"], imagen: ["img/img372.jpg","img/img365.jpg"] },
+  { art: "ART 2758", nombre: "Vestido", precio: 9999, talles: ["1M", "3M", "6M", "9M", "12M"], colores: ["Rosa", "Crudo"], imagen: "img/img388.jpg" },
+  { art: "ART 2673", nombre: "Body 'Demetria' Lunares", precio: 3999, talles: ["1M", "3M", "6M", "9M", "12M", "18M"], colores: ["Rosa", "Aqua"], imagen: ["img/img401.jpg","img/img432.jpg"] },
+  { art: "ART 2670", nombre: "Conjunto 'Isidora' Body Bordado Picot + Capri Rayado", precio: 7999, talles: ["1M", "3M", "6M", "9M", "12M"], colores: ["Rosa", "Crudo"], imagen: "img/img410.jpg" },
+  { art: "ART 40524", nombre: "Remera c/ Volado Estampada", precio: 6999, talles: ["12M", "18M", "24M", "36M"], colores: ["Azul", "Aqua"], imagen: ["img/img448.jpg","img/img151.jpg"] },
+  { art: "ART 2881", nombre: "Remera c/ Volados 'Ornella'", precio: 4999, talles: ["1", "2", "3", "4", "5"], colores: ["Rosa", "Arena"], imagen: "img/img473.jpg" },
+  { art: "ART 2638", nombre: "Vestido 'Fiamma' c/ Bretel", precio: 7999, talles: ["1", "2", "3", "4", "5"], colores: ["Blanco", "Rosa"], imagen: "img/img492.jpg" },
+  { art: "ART 2639", nombre: "Mono c/ Breteles 'Ornella'", precio: 7999, talles: ["1", "2", "3", "4", "5"], colores: ["Rosa", "Arena"], imagen: "img/img498.jpg" },
+  { art: "ART 2708", nombre: "Vestido 'Zanah' Bambulla Algodón", precio: 9999, talles: ["1", "2", "3", "4", "5"], colores: ["Rosa", "Rojo"], imagen: "img/img530.jpg" },
+  { art: "ART 2880", nombre: "Remera Estampada", precio: 5999, talles: ["2", "3", "4", "5"], colores: ["Rosa", "Crudo", "Aqua"], imagen: ["img/img549.jpg","img/img557.jpg"] },
+  { art: "ART 2601", nombre: "Buzo Boxy Liviano c/ capucha Waffle 'Lia'", precio: 5999, talles: ["2", "3", "4", "5"], colores: ["Rosa", "Pistacho"], imagen: ["img/img563.jpg","img/img571.jpg"] },
+  { art: "ART 2662", nombre: "Monito Hawai Estampado", precio: 6999, talles: ["1", "2", "3", "4", "5"], colores: ["Liberty"], imagen: ["img/img589.jpg","img/img595.jpg"] },
+  { art: "ART 2658", nombre: "Remera Lisa c/ Manga Broderia Algodón", precio: 3999, talles: ["2", "3", "4", "5"], colores: ["Chicle", "Blanco"], imagen: "img/img623.jpg" },
+  { art: "ART 2659", nombre: "Biker Lisa Lycra", precio: 4999, talles: ["2", "3", "4", "5"], colores: ["Negro", "Azul"], imagen: "img/img629.jpg" },
+  { art: "ART 6275", nombre: "Enteriza c/ Volados 'Anya'", precio: 10999, talles: ["2", "3", "4"], colores: ["Blanco", "Rosa"], imagen: ["img/img668.jpg","img/img662.jpg"] },
+  { art: "ART 6274", nombre: "Bikini c/ Volados 'Anya'", precio: 9999, talles: ["2", "3", "4"], colores: ["Rosa", "Chicle"], imagen: ["img/img656.jpg","img/img650.jpg"] },
+  { art: "ART 40521", nombre: "Remera c/ Bombachita Lycra", precio: 17999, talles: ["12M", "18M", "24M", "36M", "48M"], colores: ["Flamencos", "Guacamayos"], imagen: ["img/img725.jpg","img/img728.jpg","img/img732.jpg"] },
+  { art: "ART 6194", nombre: "Bombachita Lycra UV c/ Volados", precio: 7999, talles: ["6M", "12M", "18M", "24M"], colores: ["Rosa", "Lavanda"], imagen: ["img/img711.jpg","img/img717.jpg"] },
+  { art: "ART 2731", nombre: "Conjuntito 'Disa' c/ Babucha Waffle c/ Volados", precio: 4999, talles: ["1", "2", "3", "4", "5"], colores: ["Rosa", "Gris"], imagen: "img/img760.jpg" },
+  { art: "ART 2733", nombre: "Musculosa 'Zoey' c/ Bretel + Short", precio: 4999, talles: ["1", "2", "3", "4", "5"], colores: ["Rosa"], imagen: "img/img754.jpg" },
+  { art: "ART 2656", nombre: "Pijama 'Babette' Viscosa Estampada", precio: 4999, talles: ["1", "2", "3", "4", "5"], colores: ["Rosa", "Aqua", "Gris"], imagen: ["img/img813.jpg","img/img788.jpg","img/img792.jpg","img/img796.jpg"] },
+  { art: "ART 4552", nombre: "Conjunto Remera Bordada c/ Short Rayado", precio: 7999, talles: ["1", "2", "3", "4", "5"], colores: ["Rosa", "Melange"], imagen: ["img/img819.jpg","img/img828.jpg"] },
+  { art: "ART 2785", nombre: "Vestido sin mangas c/ volados Algodón Liso", precio: 7999, talles: ["2", "4", "6", "8"], colores: ["Rojo", "Blanco", "Rosa"], imagen: "img/img838.jpg" },
+  { art: "ART 5334", nombre: "Buzo Boxy Liviano 'Pia'", precio: 6999, talles: ["6", "8", "10", "12", "14"], colores: ["Chicle", "Melange"], imagen: "img/img868.jpg" },
+  { art: "ART 2786", nombre: "Vestido Manga Corta Bambulla Algodón 100%", precio: 9999, talles: ["2", "4", "6", "8"], colores: ["Rojo", "Blanco", "Rosa"], imagen: "img/img862.jpg" },
+  { art: "ART 5309", nombre: "Remeron Oversize", precio: 5999, talles: ["6", "8", "10", "12", "14"], colores: ["Crudo", "Aqua"], imagen: "img/img890.jpg" },
+  { art: "ART 5308", nombre: "Monito 'Magda' Bambula Estampada", precio: 8999, talles: ["6", "8", "10", "12", "14"], colores: ["Marino", "Pistacho"], imagen: "img/img906.jpg" },
+  { art: "ART 6340", nombre: "Enteriza 'Suria' c/ Volados", precio: 14999, talles: ["4", "6", "8", "10"], colores: ["Chicle", "Marino"], imagen: ["img/img925.jpg","img/img931.jpg"] },
+  { art: "ART 6341", nombre: "Bikini 'Suria' c/ Volados", precio: 14999, talles: ["4", "6", "8", "10"], colores: ["Chicle", "Marino"], imagen: ["img/img937.jpg","img/img943.jpg"] },
+
+  // --- PARA ELLOS ---
+  { art: "ART 20163", nombre: "Body Estampado c/ Bolsillo y Short Liso", precio: 9999, talles: ["3M", "6M", "9M", "12M", "18M"], colores: ["Arena", "Celeste"], imagen: "img/img985.jpg" },
+  { art: "ART 20161", nombre: "Enterito Ranglan 'Aviador y Osito'", precio: 7999, talles: ["1M", "3M", "6M"], colores: ["Azul", "Melange"], imagen: ["img/img1045.jpg","img/img1037.jpg"] },
+  { art: "ART 20162", nombre: "Conjunto Body Ranglan 'Aviador y Osito'", precio: 9999, talles: ["3M", "6M", "9M", "12M", "18M"], colores: ["Azul", "Melange"], imagen: ["img/img1051.jpg","img/img1031.jpg"] },
+  { art: "ART 20159", nombre: "Body Cuello Polo 'Steve'", precio: 7999, talles: ["3M", "6M", "9M", "12M", "18M"], colores: ["Celeste", "Blanco", "Melange"], imagen: "img/img1161.jpg" },
+  { art: "ART 20160", nombre: "Body Rayado c/ Cuello Polo", precio: 7999, talles: ["6M", "9M", "12M", "18M"], colores: ["Celeste", "Azul"], imagen: "img/img1112.jpg" },
+  { art: "ART 4510-E", nombre: "Body Rayado cuello Polo", precio: 4999, talles: ["3M", "6M", "9M", "12M", "18M"], colores: ["Celeste", "Melange"], imagen: ["img/img1125.jpg","img/img1131.jpg"] },
+  { art: "ART 4511-E", nombre: "Body Americano c/ Picot (Ellos)", precio: 5999, talles: ["3M", "6M", "9M", "12M", "18M"], colores: ["Celeste", "Blanco", "Melange"], imagen: "img/img1139.jpg" },
+  { art: "ART 4512-E", nombre: "Body Básico c/ Estampa + Short (Ellos)", precio: 9999, talles: ["3M", "6M", "9M", "12M", "18M"], colores: ["Celeste", "Melange"], imagen: ["img/img1169.jpg","img/img1178.jpg"] },
+  { art: "ART 2841", nombre: "Body Básico c/ Bolsillo", precio: 4999, talles: ["1M", "3M", "6M", "9M", "12M", "18M"], colores: ["Celeste", "Melange", "Camel"], imagen: "img/img1197.jpg" },
+  { art: "ART 2842", nombre: "Body 'Margarito' Combinado c/ Cresta", precio: 2999, talles: ["1M", "3M", "6M", "9M", "12M"], colores: ["Melange", "Verde"], imagen: "img/img1205.jpg" },
+  { art: "ART 2839", nombre: "Conjunto 'Ariel' Jardinero Waffle + Body Desagujado", precio: 8999, talles: ["1M", "3M", "6M", "9M", "12M"], colores: ["Blanco", "Melange"], imagen: ["img/img1238.jpg","img/img1244.jpg","img/img1224.jpg","img/img1230.jpg"] },
+  { art: "ART 2661", nombre: "Jardinero Rústico Estampado 'Cailin' c/ Body Americano", precio: 7999, talles: ["1M", "3M", "6M", "9M", "12M"], colores: ["Melange"], imagen: ["img/img1254.jpg","img/img1260.jpg"] },
+  { art: "ART 2840", nombre: "Conjunto 'Timoteo' Jardinero Rústico Estrellas + Body", precio: 8999, talles: ["1M", "3M", "6M", "9M", "12M"], colores: ["Azul", "Negro"], imagen: "img/img1276.jpg" },
+  { art: "ART 2960", nombre: "Remera Oversize", precio: 5999, talles: ["1", "2", "3", "4", "5"], colores: ["Blanco", "Celeste", "Melange"], imagen: "img/img1313.jpg" },
+  { art: "ART 2958", nombre: "Buzo Boxy Liviano 'Leopold'", precio: 7999, talles: ["2", "3", "4", "5"], colores: ["Azul", "Camel"], imagen: "img/img1319.jpg" },
+  { art: "ART 2996", nombre: "Remera 'Dino' Escote V c/ Short", precio: 9999, talles: ["1", "2", "3", "4", "5"], colores: ["Camel", "Gris"], imagen: "img/img1359.jpg" },
+  { art: "ART 2924", nombre: "Buzo 'Timoteo' Rústico Estrellas", precio: 6999, talles: ["2", "3", "4", "5"], colores: ["Azul", "Negro"], imagen: ["img/img1292.jpg","img/img1300.jpg"] },
+  { art: "ART 2926", nombre: "Babucha 'Silvestre' c/ Cresta", precio: 8999, talles: ["1", "2", "3", "4", "5"], colores: ["Negro", "Melange", "Aero"], imagen: "img/img1404.jpg" },
+  { art: "ART 2925", nombre: "Bermuda 'Timoteo' Rústico Estrellas", precio: 4999, talles: ["1", "2", "3", "4", "5"], colores: ["Azul", "Negro"], imagen: "img/img1417.jpg" },
+  { art: "ART 2932", nombre: "Conj. 'Margarito' Remera + Short Estampado", precio: 5999, talles: ["2", "3", "4", "5"], colores: ["Gris", "Verde"], imagen: "img/img1425.jpg" },
+  { art: "ART 40520", nombre: "Sunga Forrada de Lycra", precio: 7999, talles: ["12M", "18M", "24M", "36M", "48M"], colores: ["Cangrejo", "Auto"], imagen: "img/img1444.jpg" },
+  { art: "ART 20157", nombre: "Enterito c/ Broches Lycra", precio: 12499, talles: ["12M", "18M", "24M", "36M", "48M"], colores: ["Cangrejo", "Auto"], imagen: "img/img1450.jpg" },
+  { art: "ART 40522", nombre: "Remera c/ Sunga Lycra", precio: 15999, talles: ["12M", "18M", "24M", "36M", "48M"], colores: ["Cebra", "Tiburón"], imagen: "img/img1468.jpg" },
+  { art: "ART 5331", nombre: "Remera Oversize", precio: 5999, talles: ["6", "8", "10", "12", "14"], colores: ["Blanco", "Melange"], imagen: ["img/img1484.jpg","img/img1490.jpg"] },
+  { art: "ART 5306", nombre: "Buzo Boxy Liviano", precio: 6999, talles: ["6", "8", "10", "12", "14"], colores: ["Negro", "Melange"], imagen: "img/img1550.jpg" },
+  { art: "ART 5379", nombre: "Remera Waffle/Jersey combinada", precio: 5999, talles: ["6", "8", "10", "12", "14"], colores: ["Negro", "Melange", "Camel"], imagen: ["img/img1510.jpg","img/img1518.jpg","img/img1526.jpg"] }
+];
+
+    let pedido = [];
+    let indicesImagenes = {};
+    let currentScale = 1;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderizarCatalogo();
+      document.getElementById('fecha-nota').innerText = new Date().toLocaleDateString();
+    });
+
+    function renderizarCatalogo() {
+      const contenedor = document.getElementById('catalogo');
+      contenedor.innerHTML = productos.map((prod, index) => {
+        const imagenes = Array.isArray(prod.imagen) ? prod.imagen : [prod.imagen];
+        if (indicesImagenes[index] === undefined) indicesImagenes[index] = 0;
+        const imgActual = imagenes[indicesImagenes[index]];
+
+        const tieneVarias = imagenes.length > 1;
+        const btnPrev = tieneVarias ? `<button class="nav-img nav-prev" onclick="cambiarImagen(${index}, -1, event)">‹</button>` : '';
+        const btnNext = tieneVarias ? `<button class="nav-img nav-next" onclick="cambiarImagen(${index}, 1, event)">›</button>` : '';
+
+        return `
+          <div class="card-producto">
+            <div class="img-container">
+              ${btnPrev}
+              <img id="img-prod-${index}" src="${imgActual}" alt="${prod.nombre}" class="img-producto" onclick="abrirZoom('${imgActual}')" onerror="this.src='https://via.placeholder.com/300x300?text=Sin+Foto'">
+              ${btnNext}
+            </div>
+            <span class="art-code">${prod.art}</span>
+            <h3>${prod.nombre}</h3>
+            <div class="precio">$${prod.precio.toLocaleString()}</div>
+            
+            <div class="select-group">
+              <label>Color:</label>
+              <select id="color-${index}">
+                ${prod.colores.map(c => `<option value="${c}">${c}</option>`).join('')}
+              </select>
+            </div>
+
+            <div class="select-group">
+              <label>Talle:</label>
+              <select id="talle-${index}">
+                ${prod.talles.map(t => `<option value="${t}">${t}</option>`).join('')}
+              </select>
+            </div>
+
+            <div class="select-group">
+              <label>Cant:</label>
+              <input type="number" id="cant-${index}" value="1" min="1">
+            </div>
+
+            <button class="btn-agregar" onclick="agregarAlPedido(${index})">
+              + Agregar
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function cambiarImagen(indexProd, dir, event) {
+      event.stopPropagation();
+      const prod = productos[indexProd];
+      const imagenes = Array.isArray(prod.imagen) ? prod.imagen : [prod.imagen];
+      
+      indicesImagenes[indexProd] = (indicesImagenes[indexProd] + dir + imagenes.length) % imagenes.length;
+      
+      const imgElement = document.getElementById(`img-prod-${indexProd}`);
+      const nuevaUrl = imagenes[indicesImagenes[indexProd]];
+      imgElement.src = nuevaUrl;
+      imgElement.setAttribute('onclick', `abrirZoom('${nuevaUrl}')`);
+    }
+
+    function abrirZoom(src) {
+      const modal = document.getElementById('modal-zoom');
+      const img = document.getElementById('img-zoomed');
+      img.src = src;
+      currentScale = 1;
+      img.style.transform = `scale(${currentScale})`;
+      modal.style.display = 'flex';
+    }
+
+    function cambiarZoom(delta) {
+      currentScale += delta;
+      if (currentScale < 0.5) currentScale = 0.5;
+      if (currentScale > 3) currentScale = 3;
+      document.getElementById('img-zoomed').style.transform = `scale(${currentScale})`;
+    }
+
+    function cerrarZoom() {
+      document.getElementById('modal-zoom').style.display = 'none';
+    }
+
+    function agregarAlPedido(indexProd) {
+      const prod = productos[indexProd];
+      const color = document.getElementById(`color-${indexProd}`).value;
+      const talle = document.getElementById(`talle-${indexProd}`).value;
+      const cantidad = parseInt(document.getElementById(`cant-${indexProd}`).value);
+
+      if (cantidad <= 0 || isNaN(cantidad)) return;
+
+      const existeIdx = pedido.findIndex(item => item.art === prod.art && item.color === color && item.talle === talle);
+
+      if (existeIdx > -1) {
+        pedido[existeIdx].cantidad += cantidad;
+        pedido[existeIdx].subtotal = pedido[existeIdx].cantidad * prod.precio;
+      } else {
+        pedido.push({
+          art: prod.art,
+          nombre: prod.nombre,
+          precio: prod.precio,
+          color,
+          talle,
+          cantidad,
+          subtotal: cantidad * prod.precio
+        });
+      }
+
+      actualizarHojaUI();
+    }
+
+    function eliminarItem(index) {
+      pedido.splice(index, 1);
+      actualizarHojaUI();
+    }
+
+    function actualizarHojaUI() {
+      const tbody = document.getElementById('cuerpo-nota');
+      const totalEl = document.getElementById('total-monto');
+      const barTotalEl = document.getElementById('bar-total');
+
+      if (pedido.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding: 1.5rem 0;">Vacío</td></tr>`;
+        totalEl.innerText = '$0';
+        barTotalEl.innerText = '$0';
+        return;
+      }
+
+      tbody.innerHTML = pedido.map((item, index) => `
+        <tr>
+          <td><strong>${item.art}</strong></td>
+          <td>${item.talle}</td>
+          <td>${item.color}</td>
+          <td>${item.cantidad}</td>
+          <td>$${item.subtotal.toLocaleString()}</td>
+          <td class="btn-eliminar"><button style="color:red; background:none; border:none; font-weight:bold; cursor:pointer;" onclick="eliminarItem(${index})">✕</button></td>
+        </tr>
+      `).join('');
+
+      const total = pedido.reduce((sum, item) => sum + item.subtotal, 0);
+      totalEl.innerText = `$${total.toLocaleString()}`;
+      barTotalEl.innerText = `$${total.toLocaleString()}`;
+    }
+
+    function irAlPedido() {
+      document.getElementById('seccion-pedido').scrollIntoView({ behavior: 'smooth' });
+    }
+
+function descargarPDF() {
+  if (pedido.length === 0) return alert("La nota de pedido está vacía.");
+  window.print();
+}
+
+    function enviarWhatsApp() {
+      if (pedido.length === 0) return alert("La nota de pedido está vacía.");
+      
+      const nombre = document.getElementById('cli-nombre').value.trim() || 'No especificado';
+      const telefono = document.getElementById('cli-telefono').value.trim() || 'No especificado';
+      const localidad = document.getElementById('cli-localidad').value.trim() || 'No especificado';
+
+      let mensaje = "📋 *NOTA DE PEDIDO - CON AMOR*\n";
+      mensaje += `👤 *Cliente:* ${nombre}\n`;
+      mensaje += `📞 *Tel:* ${telefono}\n`;
+      mensaje += `📍 *Localidad:* ${localidad}\n`;
+      mensaje += `------------------------------------\n\n`;
+
+      pedido.forEach(i => {
+        mensaje += `• ${i.art} - ${i.nombre}\n  Talle: ${i.talle} | Color: ${i.color} | Cant: ${i.cantidad} -> $${i.subtotal.toLocaleString()}\n`;
+      });
+
+      const total = pedido.reduce((sum, item) => sum + item.subtotal, 0);
+      mensaje += `\n💰 *TOTAL: $${total.toLocaleString()}*`;
+      
+      window.open(`https://wa.me/3426112097?text=${encodeURIComponent(mensaje)}`, '_blank');
+    }
+  </script>
+</body>
+</html>
